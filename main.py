@@ -3,7 +3,7 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from functions.call_function import available_functions
+from functions import call_function
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -36,12 +36,28 @@ def main():
     response = client.models.generate_content(
         model="gemini-2.5-flash", 
         contents=messages,
-        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt)
+        config=types.GenerateContentConfig(tools=[call_function.available_functions], system_instruction=system_prompt)
         )
     
     if response.function_calls:
-        for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
+      function_results = []
+
+      for function_call in response.function_calls:
+            function_call_result = call_function(function_call, verbose=True)
+            
+            if not function_call_result.parts:
+                raise Exception("Function result has no parts")
+            
+            function_response = function_call_result.parts[0].function_response
+            if not function_response:
+                raise Exception("Function result part is not a function response")
+                
+            if function_response.response is None:
+                raise Exception("Function response has no content")
+            
+            function_results.append(function_call_result.parts[0])
+
+            print(f"-> {function_response.response}")       
     else:
         print(response.text)
     
