@@ -26,7 +26,7 @@ def get_file_content(working_directory,file_path):
     except Exception as e:
         return f"Error: {e}"
 
-schema_get_files_info = types.FunctionDeclaration(
+schema_get_file_content = types.FunctionDeclaration(
     name="get_file_content",
     description="Read the content of a specific file.",
     parameters=types.Schema(
