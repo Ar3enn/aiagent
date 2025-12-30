@@ -11,23 +11,28 @@ def run_python_file(working_directory,file_path, args=[]):
     try:
         
         if not full_path.startswith(working_directory_abs):
-            return print(f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory')
+            return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
         
         if not os.path.isfile(full_path):
-            return print(f'Error: File "{file_path}" not found.')
+            return f'Error: File "{file_path}" not found.'
         
         if  not full_path.endswith(".py"):
-            return print(f'Error: "{file_path}" is not a Python file.')
+            return f'Error: "{file_path}" is not a Python file.'
         
         command_list = ["python", full_path] + args
         completed_process = subprocess.run(args=command_list,timeout=30,cwd=working_directory_abs,capture_output=True,text=True)
         
+        output = completed_process.stdout
+        if completed_process.stderr:
+            output += f"\nSTDERR: {completed_process.stderr}"
+
         if completed_process.returncode != 0:
-            return print(f"Process exited with code {completed_process.returncode}")
-        if completed_process.stdout == "":
-            return print(f"No Output produced")
+            return f"Process exited with code {completed_process.returncode}\n{output}"
         
-        return print(f"STDOUT: {completed_process.stdout}\nSTDERR: {completed_process.stderr}")
+        if not output.strip():
+            return "No Output produced"
+            
+        return output
     
     except Exception as e:
         return f"Error: executing Python file: {e}"
@@ -38,11 +43,11 @@ schema_run_python_file = types.FunctionDeclaration(
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
-            "path": types.Schema(
+            "file_path": types.Schema(
                 type=types.Type.STRING,
                 description="Path to the Python file to execute, relative to the working directory",
             ),
         },
-        required=["path"],
+        required=["file_path"],
     ),
 )   
