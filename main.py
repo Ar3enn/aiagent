@@ -33,33 +33,42 @@ def main():
         types.Content(role="user",parts=[types.Part(text=user_prompt)])
     ]
     
-    response = client.models.generate_content(
-        model="gemini-2.5-flash", 
-        contents=messages,
-        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt)
-        )
-    
-    if response.function_calls:
-      function_results = []
+    for _ in range(10):
+        response = client.models.generate_content(
+            model="gemini-2.5-flash", 
+            contents=messages,
+            config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt)
+            )
+        
+        for candidate in response.candidates:
+            messages.append(candidate.content)
+        
+        
+        if response.function_calls:
+            function_results = []
 
-      for function_call in response.function_calls:
-            function_call_result = call_function(function_call, verbose=True)
-            
-            if not function_call_result.parts:
-                raise Exception("Function result has no parts")
-            
-            function_response = function_call_result.parts[0].function_response
-            if not function_response:
-                raise Exception("Function result part is not a function response")
+            for function_call in response.function_calls:
+                    function_call_result = call_function(function_call, verbose=True)
                 
-            if function_response.response is None:
-                raise Exception("Function response has no content")
-            
-            function_results.append(function_call_result.parts[0])
+                    if not function_call_result.parts:
+                        raise Exception("Function result has no parts")
+                
+                    function_response = function_call_result.parts[0].function_response
+                    if not function_response:
+                        raise Exception("Function result part is not a function response")
+                    
+                    if function_response.response is None:
+                        raise Exception("Function response has no content")
+                
+                    function_results.append(function_call_result.parts[0])
 
-            print(f"-> {function_response.response}")       
-    else:
-        print(response.text)
+            messages.append(types.Content(role="user", parts=function_results))       
+        else:
+            print("Final response:")
+            print(response.text)
+            return
+    print("Error: Maximum iterations reached without a final response.")
+    sys.exit(1)   
     
     if len(sys.argv) >= 3:
         if sys.argv[2] == "--verbose":
