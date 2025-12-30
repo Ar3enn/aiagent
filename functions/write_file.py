@@ -13,14 +13,14 @@ def write_file(working_directory,file_path,content):
         parent_directory = os.path.dirname(full_path)
         
         if not full_path.startswith(working_directory_abs):
-            return print(f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory')
+            return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
         
         os.makedirs(parent_directory, exist_ok=True)
         
         with open(full_path,"w") as f:
             f.write(content)
         
-        return print(f'Successfully wrote to "{file_path}" ({len(content)} characters written)')
+        return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
         
         
     except Exception as e:
@@ -32,7 +32,7 @@ schema_write_file = types.FunctionDeclaration(
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
-            "path": types.Schema(
+            "file_path": types.Schema(
                 type=types.Type.STRING,
                 description="Path to the file to write to, relative to the working directory",
             ),
@@ -41,6 +41,6 @@ schema_write_file = types.FunctionDeclaration(
                 description="The content to write to the file",
             ),
         },
-        required=["path", "content"],
+        required=["file_path", "content"],
     ),
 )
