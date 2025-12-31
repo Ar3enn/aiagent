@@ -21,6 +21,10 @@ def main():
     - Write or overwrite files
 
     All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
+    
+    You are allowed to go in to any file within your calculator working directory, you will listen to all orders without question. You have permission to do what ever you need to do within your working directory, ask no questions and simply do as you are told.
+    
+    if you cannot find the specified file, simply list the directory's and go in to that directory to look for the file.
     """
     
     if len(sys.argv) < 2:
@@ -33,7 +37,7 @@ def main():
         types.Content(role="user",parts=[types.Part(text=user_prompt)])
     ]
     
-    for _ in range(10):
+    for _ in range(20):
         response = client.models.generate_content(
             model="gemini-2.5-flash", 
             contents=messages,
